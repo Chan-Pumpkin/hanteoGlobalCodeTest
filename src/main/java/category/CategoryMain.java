@@ -1,9 +1,11 @@
 package category;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.util.List;
 
 public class CategoryMain {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         CategoryService manager = new CategoryService();
 
         // 카테고리 추가
@@ -63,7 +65,12 @@ public class CategoryMain {
         }
 
         // 카테고리 JSON 변환
-        String json = manager.toJsonCategories();
-        System.out.println("카테고리 JSON: " + json);
+        try {
+            String json = manager.toJsonCategories();
+            System.out.println("카테고리 JSON: " + json);
+        }catch (JsonProcessingException e){
+            System.err.println("JSON 처리 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }

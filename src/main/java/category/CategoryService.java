@@ -1,12 +1,13 @@
 package category;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.*;
 
 public class CategoryService {
-    private Map<Integer, CategoryVO> categories;
-    private Map<Integer, List<Integer>> parentChildMap;
+    private final Map<Integer, CategoryVO> categories;
+    private final Map<Integer, List<Integer>> parentChildMap;
 
     public CategoryService() {
         categories = new HashMap<>();
@@ -101,9 +102,9 @@ public class CategoryService {
     /**
      * 카테고리 Json 변환
      * @return Json 문자열
-     * @throws Exception 예외
+     * @throws JsonProcessingException 예외
      */
-    public String toJsonCategories() throws Exception {
+    public String toJsonCategories() throws JsonProcessingException {
         Map<Integer, Object> jsonMap = new TreeMap<>();
         for (Integer id : categories.keySet()) {
             jsonMap.put(id, toJsonCategoriesMap(id));
