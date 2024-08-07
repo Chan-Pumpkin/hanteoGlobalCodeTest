@@ -6,31 +6,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
 
 public class CategoryService {
-    private final Map<Integer, CategoryVO> categories;
-    private final Map<Integer, List<Integer>> parentChildMap;
+    private final CategoryRepository repository;
 
-    public CategoryService() {
-        categories = new HashMap<>();
-        parentChildMap = new HashMap<>();
-    }
-
-    /**
-     * 카테고리 추가
-     * @param id 카테고리 ID
-     * @param name 카테고리 이름
-     */
-    public void addCategory(int id, String name) {
-        categories.put(id, new CategoryVO(id, name));
-    }
-
-    /**
-     * 카테고리 관계 추가
-     * @param parentIdx 부모 카테고리 ID
-     * @param childIdx 자식 카테고리 ID
-     */
-    public void addRelation(int parentIdx, int childIdx) {
-        parentChildMap.putIfAbsent(parentIdx, new ArrayList<>());
-        parentChildMap.get(parentIdx).add(childIdx);
+    public CategoryService(CategoryRepository repository) {
+        this.repository = repository;
     }
 
     /**
@@ -40,8 +19,8 @@ public class CategoryService {
      */
     public List<CategoryVO> searchCategoryById(int id){
         List<CategoryVO> result = new ArrayList<>();
-        if (categories.containsKey(id)) {
-            result.add(categories.get(id));
+        if (repository.getCategories().containsKey(id)) {
+            result.add(repository.getCategories().get(id));
             result.addAll(getSubcategories(id));
         }
         return result;
@@ -54,9 +33,9 @@ public class CategoryService {
      */
     public List<CategoryVO> searchCategoryByName(String name) {
         List<CategoryVO> result = new ArrayList<>();
-        for (CategoryVO categoryVO : categories.values()) {
+        for (CategoryVO categoryVO : repository.getCategories().values()) {
             if (categoryVO.getName().equals(name)) {
-                result.add(categories.get(categoryVO.getId()));
+                result.add(repository.getCategories().get(categoryVO.getId()));
                 result.addAll(getSubcategories(categoryVO.getId()));
             }
         }
@@ -70,9 +49,9 @@ public class CategoryService {
      */
     public List<CategoryVO> getSubcategories(int parentId) {
         List<CategoryVO> result = new ArrayList<>();
-        if (parentChildMap.containsKey(parentId)) {
-            for (int childId : parentChildMap.get(parentId)) {
-                result.add(categories.get(childId));
+        if (repository.getParentChildMap().containsKey(parentId)) {
+            for (int childId : repository.getParentChildMap().get(parentId)) {
+                result.add(repository.getCategories().get(childId));
                 result.addAll(getSubcategories(childId));
             }
         }
@@ -86,12 +65,12 @@ public class CategoryService {
      */
     private Map<String, Object> toJsonCategoriesMap(int id) {
         Map<String, Object> result = new HashMap<>();
-        CategoryVO categoryVO = categories.get(id);
+        CategoryVO categoryVO = repository.getCategories().get(id);
         result.put("id", categoryVO.getId());
         result.put("name", categoryVO.getName());
         List<Object> subcategories = new ArrayList<>();
-        if (parentChildMap.containsKey(id)) {
-            for (int childId : parentChildMap.get(id)) {
+        if (repository.getParentChildMap().containsKey(id)) {
+            for (int childId : repository.getParentChildMap().get(id)) {
                 subcategories.add(toJsonCategoriesMap(childId));
             }
         }
@@ -106,7 +85,7 @@ public class CategoryService {
      */
     public String toJsonCategories() throws JsonProcessingException {
         Map<Integer, Object> jsonMap = new TreeMap<>();
-        for (Integer id : categories.keySet()) {
+        for (Integer id : repository.getCategories().keySet()) {
             jsonMap.put(id, toJsonCategoriesMap(id));
         }
         ObjectMapper mapper = new ObjectMapper();
